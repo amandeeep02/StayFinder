@@ -30,11 +30,12 @@ export const BookingsList = ({ bookings, loading, onCancel, onReview }: Bookings
   // Filter bookings
   const filteredBookings = bookings.filter(booking => {
     const property = booking.property as any;
-    const matchesSearch = property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         property.location.city.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = property?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         property?.location?.city?.toLowerCase().includes(searchQuery.toLowerCase());
     
+    const checkInDate = booking.checkInDate || booking.checkIn;
     const matchesStatus = statusFilter === 'all' || 
-                         (statusFilter === 'upcoming' && booking.status === 'confirmed' && new Date(booking.checkIn) > new Date()) ||
+                         (statusFilter === 'upcoming' && booking.status === 'confirmed' && new Date(checkInDate) > new Date()) ||
                          booking.status === statusFilter;
     
     return matchesSearch && matchesStatus;
@@ -42,15 +43,20 @@ export const BookingsList = ({ bookings, loading, onCancel, onReview }: Bookings
 
   // Sort bookings
   const sortedBookings = [...filteredBookings].sort((a, b) => {
+    const aCheckIn = a.checkInDate || a.checkIn;
+    const bCheckIn = b.checkInDate || b.checkIn;
+    const aTotalPrice = a.totalAmount || a.totalPrice || 0;
+    const bTotalPrice = b.totalAmount || b.totalPrice || 0;
+
     switch (sortBy) {
       case 'newest':
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       case 'oldest':
         return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       case 'check-in':
-        return new Date(a.checkIn).getTime() - new Date(b.checkIn).getTime();
+        return new Date(aCheckIn).getTime() - new Date(bCheckIn).getTime();
       case 'price':
-        return b.totalPrice - a.totalPrice;
+        return bTotalPrice - aTotalPrice;
       default:
         return 0;
     }

@@ -36,7 +36,9 @@ const AppRoutes = () => {
                     path="/bookings"
                     element={
                         <PrivateRoute>
-                            <Bookings />
+                            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                                <Bookings />
+                            </div>
                         </PrivateRoute>
                     }
                 />
@@ -44,7 +46,9 @@ const AppRoutes = () => {
                     path="/host/dashboard"
                     element={
                         <PrivateRoute>
-                            <HostDashboard />
+                            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                                <HostDashboard />
+                            </div>
                         </PrivateRoute>
                     }
                 />
@@ -52,7 +56,9 @@ const AppRoutes = () => {
                     path="/host/properties/new"
                     element={
                         <PrivateRoute>
-                            <PropertyFormPage />
+                            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                                <PropertyFormPage />
+                            </div>
                         </PrivateRoute>
                     }
                 />

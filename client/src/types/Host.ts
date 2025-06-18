@@ -1,23 +1,34 @@
 export interface Host {
   _id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
+  user: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
   phone?: string;
   avatar?: string;
   bio?: string;
-  isVerified: boolean;
-  joinedDate: string;
-  rating: number;
-  reviewCount: number;
-  responseRate: number;
-  responseTime: string; // e.g., "within an hour"
   languages: string[];
-  propertyCount: number;
-  totalEarnings: number;
-  completedBookings: number;
-  createdAt: string;
-  updatedAt: string;
+  yearsOfExperience: number;
+  isVerified?: boolean;
+  isSuperhost?: boolean;
+  averageRating?: number;
+  responseRate: number;
+  responseTime: string;
+  acceptanceRate: number;
+  cancellationPolicy: string;
+  instantBooking: boolean;
+  checkInTime: string;
+  checkOutTime: string;
+  minimumStay: number;
+  maximumStay: number;
+  hostingStyle?: string;
+  houseRules: string[];
+  achievements?: Achievement[];
+  verifications: string[];
+  isActive: boolean;
+  joinedDate?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface HostStats {
@@ -25,6 +36,8 @@ export interface HostStats {
   activeProperties: number;
   totalBookings: number;
   pendingBookings: number;
+  completedBookings: number;
+  cancelledBookings: number;
   totalEarnings: number;
   monthlyEarnings: number;
   occupancyRate: number;
@@ -35,4 +48,11 @@ export interface EarningsData {
   month: string;
   earnings: number;
   bookings: number;
+}
+
+export interface Achievement {
+  type: string;
+  title: string;
+  description: string;
+  earnedAt?: string;
 }

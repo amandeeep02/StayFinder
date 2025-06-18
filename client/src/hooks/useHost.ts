@@ -18,29 +18,49 @@ export const useHost = () => {
             try {
                 setLoading(true);
 
-                // Fetch host profile first
-                const hostRes = await hostAPI.getProfile();
-                setHost(hostRes.data);
-
-                // Then fetch other data in parallel
-                const [statsRes, propertiesRes, bookingsRes] =
+                // Fetch data in parallel
+                const [dashboardRes, propertiesRes, bookingsRes] =
                     await Promise.all([
-                        hostAPI.getDashboard(), // This matches your server route: /host/dashboard/stats
-                        propertiesAPI.getByHost(), // This matches: /properties/host/my-properties
-                        bookingsAPI.getHostBookings(), // This matches: /bookings/host/bookings
+                        hostAPI.getDashboard(), // This returns host and stats data
+                        propertiesAPI.getByHost(), // This returns properties array
+                        bookingsAPI.getHostBookings(), // This returns bookings with pagination
                     ]);
 
-                setStats(statsRes.data);
-                setProperties(
-                    propertiesRes.data.properties || propertiesRes.data || []
-                );
-                setBookings(
-                    bookingsRes.data.bookings || bookingsRes.data || []
-                );
+                // Extract host data from dashboard response
+                const dashboardData = dashboardRes.data;
+                setHost(dashboardData.host);
 
-                // Extract earnings data from stats or bookings if available
-                if (statsRes.data?.earnings) {
-                    setEarnings(statsRes.data.earnings);
+                // Map the stats from dashboard data
+                const mappedStats: HostStats = {
+                    totalProperties: dashboardData.stats?.totalProperties || 0,
+                    activeProperties: dashboardData.stats?.activeProperties || 0,
+                    totalBookings: dashboardData.stats?.totalBookings || 0,
+                    pendingBookings: dashboardData.stats?.pendingBookings || 0,
+                    completedBookings: dashboardData.stats?.completedBookings || 0,
+                    cancelledBookings: dashboardData.stats?.cancelledBookings || 0,
+                    totalEarnings: dashboardData.earnings?.totalEarnings || 0,
+                    monthlyEarnings: dashboardData.earnings?.currentMonthEarnings || 0,
+                    occupancyRate: dashboardData.earnings?.occupancyRate || 0,
+                    averageRating: dashboardData.host?.averageRating || 0,
+                };
+                setStats(mappedStats);
+
+                // Set properties (already an array)
+                setProperties(propertiesRes.data.properties || propertiesRes.data || []);
+                
+                // Set bookings from the response
+                setBookings(bookingsRes.data.bookings || bookingsRes.data || []);
+
+                // Calculate earnings data from earnings object or bookings
+                if (dashboardData.earnings) {
+                    const earningsData = [
+                        {
+                            month: new Date().toISOString().substring(0, 7),
+                            earnings: dashboardData.earnings.currentMonthEarnings || 0,
+                            bookings: dashboardData.stats?.totalBookings || 0,
+                        }
+                    ];
+                    setEarnings(earningsData);
                 } else {
                     // Calculate earnings from bookings if not provided by API
                     const earningsData = calculateEarningsFromBookings(
@@ -81,14 +101,15 @@ export const useHost = () => {
                 booking.status === "confirmed" ||
                 booking.status === "completed"
             ) {
-                const month = new Date(booking.checkIn)
+                // Use checkInDate if available, fallback to checkIn
+                const checkInDate = booking.checkInDate || booking.checkIn;
+                const month = new Date(checkInDate)
                     .toISOString()
                     .substring(0, 7); // YYYY-MM format
                 const currentEarnings = earningsMap.get(month) || 0;
-                earningsMap.set(
-                    month,
-                    currentEarnings + (booking.totalPrice || 0)
-                );
+                // Use totalAmount if available, fallback to totalPrice
+                const amount = booking.totalAmount || booking.totalPrice || 0;
+                earningsMap.set(month, currentEarnings + amount);
             }
         });
 
@@ -96,10 +117,11 @@ export const useHost = () => {
             month,
             earnings: amount,
             bookings: bookings.filter(
-                (b) =>
-                    new Date(b.checkIn).toISOString().substring(0, 7) ===
-                        month &&
-                    (b.status === "confirmed" || b.status === "completed")
+                (b) => {
+                    const checkInDate = b.checkInDate || b.checkIn;
+                    return new Date(checkInDate).toISOString().substring(0, 7) === month &&
+                        (b.status === "confirmed" || b.status === "completed");
+                }
             ).length,
         }));
     };
@@ -108,23 +130,42 @@ export const useHost = () => {
         try {
             setLoading(true);
 
-            const [hostRes, statsRes, propertiesRes, bookingsRes] =
+            const [dashboardRes, propertiesRes, bookingsRes] =
                 await Promise.all([
-                    hostAPI.getProfile(),
                     hostAPI.getDashboard(),
                     propertiesAPI.getByHost(),
                     bookingsAPI.getHostBookings(),
                 ]);
 
-            setHost(hostRes.data);
-            setStats(statsRes.data);
-            setProperties(
-                propertiesRes.data.properties || propertiesRes.data || []
-            );
+            const dashboardData = dashboardRes.data;
+            setHost(dashboardData.host);
+
+            const mappedStats: HostStats = {
+                totalProperties: dashboardData.stats?.totalProperties || 0,
+                activeProperties: dashboardData.stats?.activeProperties || 0,
+                totalBookings: dashboardData.stats?.totalBookings || 0,
+                pendingBookings: dashboardData.stats?.pendingBookings || 0,
+                completedBookings: dashboardData.stats?.completedBookings || 0,
+                cancelledBookings: dashboardData.stats?.cancelledBookings || 0,
+                totalEarnings: dashboardData.earnings?.totalEarnings || 0,
+                monthlyEarnings: dashboardData.earnings?.currentMonthEarnings || 0,
+                occupancyRate: dashboardData.earnings?.occupancyRate || 0,
+                averageRating: dashboardData.host?.averageRating || 0,
+            };
+            setStats(mappedStats);
+
+            setProperties(propertiesRes.data.properties || propertiesRes.data || []);
             setBookings(bookingsRes.data.bookings || bookingsRes.data || []);
 
-            if (statsRes.data?.earnings) {
-                setEarnings(statsRes.data.earnings);
+            if (dashboardData.earnings) {
+                const earningsData = [
+                    {
+                        month: new Date().toISOString().substring(0, 7),
+                        earnings: dashboardData.earnings.currentMonthEarnings || 0,
+                        bookings: dashboardData.stats?.totalBookings || 0,
+                    }
+                ];
+                setEarnings(earningsData);
             } else {
                 const earningsData = calculateEarningsFromBookings(
                     bookingsRes.data.bookings || bookingsRes.data || []
@@ -140,6 +181,19 @@ export const useHost = () => {
             );
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Add refreshBookings function for the dashboard
+    const refreshBookings = async () => {
+        try {
+            const bookingsRes = await bookingsAPI.getHostBookings();
+            setBookings(bookingsRes.data.bookings || bookingsRes.data || []);
+        } catch (err: any) {
+            console.error("Error refreshing bookings:", err);
+            throw new Error(
+                err.response?.data?.error || "Failed to refresh bookings"
+            );
         }
     };
 
@@ -248,6 +302,7 @@ export const useHost = () => {
         loading,
         error,
         refreshData,
+        refreshBookings, // Add this for the dashboard component
         updateProperty,
         deleteProperty,
         togglePropertyStatus,

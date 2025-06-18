@@ -75,7 +75,11 @@ export const HostBookingsList = ({ bookings, onApprove, onReject, onContact, isU
     // Pending bookings first, then by check-in date
     if (a.status === 'pending' && b.status !== 'pending') return -1;
     if (b.status === 'pending' && a.status !== 'pending') return 1;
-    return new Date(a.checkIn).getTime() - new Date(b.checkIn).getTime();
+    
+    // Use checkInDate if available, fallback to checkIn
+    const aCheckIn = a.checkInDate || a.checkIn;
+    const bCheckIn = b.checkInDate || b.checkIn;
+    return new Date(aCheckIn).getTime() - new Date(bCheckIn).getTime();
   });
 
   return (
@@ -141,11 +145,11 @@ export const HostBookingsList = ({ bookings, onApprove, onReject, onContact, isU
               ? `${guest.firstName?.[0] || 'G'}${guest.lastName?.[0] || 'U'}`
               : 'GU';
             
-            const guestId = typeof guest === 'object' && guest !== null
-              ? guest._id || 'Unknown'
-              : typeof guest === 'string'
-                ? guest
-                : 'Unknown';
+            // Use the correct field names from backend
+            const checkInDate = booking.checkInDate || booking.checkIn;
+            const checkOutDate = booking.checkOutDate || booking.checkOut;
+            const guestCount = booking.numberOfGuests || booking.guests || 1;
+            const totalPrice = booking.totalAmount || booking.totalPrice || 0;
             
             return (
               <motion.div
@@ -216,7 +220,7 @@ export const HostBookingsList = ({ bookings, onApprove, onReject, onContact, isU
                               {guestName}
                             </p>
                             <p className="text-xs text-gray-500">
-                              {booking.guests || 1} guests · {formatDateRange(booking.checkIn, booking.checkOut)}
+                              {guestCount} guests · {formatDateRange(checkInDate, checkOutDate)}
                             </p>
                           </div>
                         </div>
@@ -224,13 +228,46 @@ export const HostBookingsList = ({ bookings, onApprove, onReject, onContact, isU
                       
                       <div className="text-right">
                         <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                          {formatPrice(booking.totalPrice || 0)}
+                          {formatPrice(totalPrice)}
                         </p>
                         <p className="text-sm text-gray-500">
                           Total
                         </p>
                       </div>
                     </div>
+
+                    {/* Booking Details */}
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-gray-500">Payment Status</p>
+                        <Badge variant={booking.paymentStatus === 'pending' ? 'outline' : 'default'}>
+                          {booking.paymentStatus || 'Unknown'}
+                        </Badge>
+                      </div>
+                      <div>
+                        <p className="text-gray-500">Total Nights</p>
+                        <p className="font-medium">{booking.totalNights || 1}</p>
+                      </div>
+                    </div>
+
+                    {/* Guest Details */}
+                    {booking.guestDetails && (
+                      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+                        <p className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">
+                          Guest Information
+                        </p>
+                        <div className="text-sm text-blue-700 dark:text-blue-300">
+                          <p>{booking.guestDetails.firstName} {booking.guestDetails.lastName}</p>
+                          <p>{booking.guestDetails.email}</p>
+                          <p>{booking.guestDetails.phone}</p>
+                          <p className="mt-1">
+                            {booking.guestDetails.adults} Adults
+                            {booking.guestDetails.children > 0 && `, ${booking.guestDetails.children} Children`}
+                            {booking.guestDetails.infants > 0 && `, ${booking.guestDetails.infants} Infants`}
+                          </p>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Special Requests */}
                     {booking.specialRequests && (

@@ -236,7 +236,7 @@ export const PropertyManagement = ({
                                     <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300 pt-2">
                                         <div className="flex items-center space-x-1">
                                             <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                                            <span>{property.rating}</span>
+                                            <span>{property.averageRating}</span>
                                         </div>
                                         <div className="flex items-center space-x-1">
                                             <Calendar className="w-3 h-3 text-gray-400" />

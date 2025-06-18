@@ -59,7 +59,7 @@ export const useBookings = () => {
         return {
             total: bookingsData.length,
             upcoming: bookingsData.filter(
-                (b) => b.status === "confirmed" && new Date(b.checkIn) > now
+                (b) => b.status === "confirmed" && new Date(b.checkInDate || b.checkIn) > now
             ).length,
             completed: bookingsData.filter((b) => b.status === "completed")
                 .length,
@@ -98,7 +98,7 @@ export const useBookings = () => {
         data?: any
     ) => {
         try {
-            const response = await bookingsAPI.update(bookingId, {
+            const response = await bookingsAPI.updateStatus(bookingId, {
                 status,
                 ...data,
             });
@@ -137,7 +137,7 @@ export const useBookings = () => {
                 cancellationReason: reason,
             });
         } catch (err) {
-            throw err; // Re-throw to allow component to handle
+            throw err;
         }
     };
 

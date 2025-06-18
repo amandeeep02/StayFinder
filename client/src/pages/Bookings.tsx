@@ -32,9 +32,10 @@ export const Bookings = () => {
     alert('Review functionality coming soon!');
   };
 
+  // Calculate total spent using totalAmount field
   const totalSpent = bookings
     .filter(booking => booking.status === 'completed')
-    .reduce((sum, booking) => sum + booking.totalPrice, 0);
+    .reduce((sum, booking) => sum + (booking.totalAmount || booking.totalPrice || 0), 0);
 
   if (loading) {
     return (
