@@ -237,7 +237,7 @@ export const NavbarLogo = () => {
             className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal"
         >
             <img
-                src="https://assets.aceternity.com/logo-dark.png"
+                src="https://internshala-uploads.internshala.com/logo%2F6jj00qbnwa9-36394.png"
                 alt="logo"
                 width={30}
                 height={30}

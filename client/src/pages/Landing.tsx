@@ -1,29 +1,18 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import { AuroraBackground } from "@/components/ui/aurora-background";
 
 export function Landing() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
-    const { loginWithGoogle } = useAuth();
     const navigate = useNavigate();
 
     const handleGoogleSignIn = async () => {
         try {
             setLoading(true);
             setError("");
-
-            const { isNewUser } = await loginWithGoogle();
-
-            if (isNewUser) {
-                // Redirect new users to complete their profile
-                navigate("/user-details");
-            } else {
-                // Redirect existing users to home
-                navigate("/home");
-            }
+            navigate("/user-details");
         } catch (err) {
             setError("Failed to sign in with Google");
             console.error(err);
@@ -55,7 +44,7 @@ export function Landing() {
                                 href="http://amandeep-singh.xyz"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-blue-600 dark:text-blue-400 hover:underline"
+                                className="text-blue-600 dark:text-blue-400 hover:underline z-100"
                             >
                                 Amandeep Singh
                             </a>

@@ -15,7 +15,6 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { ModeToggle } from "../ModeToggle";
 
-
 export function NewNavbar() {
     const navItems = [
         {
@@ -39,8 +38,7 @@ export function NewNavbar() {
     const handleGoogleSignIn = async () => {
         try {
             await loginWithGoogle();
-            // Redirect to home instead of user-details if user already exists
-            navigate("/home");
+            navigate("/user-details");
         } catch (err) {
             setError("Failed to sign in with Google");
             console.error(err);
